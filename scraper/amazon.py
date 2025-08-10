@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 import re
-import time
+
 
 def AmazonScrapper(word):
     Amazon_Product = []
@@ -76,3 +76,4 @@ def AmazonScrapper(word):
             Amazon_Product.append(amazon_data)
 
     return Amazon_Product
+

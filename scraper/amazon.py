@@ -2,9 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 import re
+import json
+
+def AmazonScrapper(word,domain):
+
+    with open(f'scraper\\language\\{domain}.json','r', encoding='utf-8') as language_:
+        language = json.load(language_)
 
 
-def AmazonScrapper(word):
     Amazon_Product = []
     word = word.replace(' ', '+')
 
@@ -16,36 +21,36 @@ def AmazonScrapper(word):
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
         "Connection": "keep-alive",
         "Upgrade-Insecure-Requests": "1",
-        "Referer": "https://www.amazon.fr/",
+        "Referer": f"https://www.amazon.{domain}/",
     }
 
     session = requests.Session()
     session.headers.update(headers)
 
-    url = f'https://www.amazon.fr/s?k={word}&s=relevanceblender&ref=nb_sb_noss'
+    url = f'https://www.amazon.{domain}/s?k={word}&s=relevanceblender&ref=nb_sb_noss'
     r = session.get(url)
 
     soup = BeautifulSoup(r.content, 'html.parser')
 
-    results = soup.find_all(attrs={"data-component-type": "s-search-result"})
+    results = soup.find_all(attrs=language["RESULTS_ATTR"])
 
     for item in results:
         classes = item.get("class", [])
-        if "AdHolder" in classes:  
+        if language["ADS_CLASS"] in classes:  
             continue
         
-        link_tag = item.find("a", class_="a-link-normal s-no-outline")
+        link_tag = item.find("a", class_=language["LINK_CLASS"])
 
         if link_tag and 'href' in link_tag.attrs:
             href = link_tag['href']
-            full_link = f"https://www.amazon.fr{href}"
-
+            full_link = f"https://www.amazon.{domain}{href}"
             title = item.find('h2')
-            price_tag = item.find("span", class_="a-offscreen")
-            review_tag = item.find("span", class_="a-icon-alt")
+            price_tag = item.find("span", class_=language["PRICE_CLASS"])
+            review_tag = item.find("span", class_=language["REVIEW_CLASS"])
 
             num_reviews = 0
-            ratings_link = item.find("a", class_="a-link-normal s-underline-text s-underline-link-text s-link-style")
+            ratings_link = item.find("a", class_=language["RATE_LINK_PARAMETER"])
+
             if ratings_link:
                 ratings_span = ratings_link.find("span", class_="a-size-base s-underline-text")
                 if ratings_span:
@@ -53,8 +58,10 @@ def AmazonScrapper(word):
                     digits_only = re.sub(r"[^\d]", "", text)
                     if digits_only:
                         num_reviews = int(digits_only)
+
             else:
-                review_count_tag = item.find("span", {"data-hook": "total-review-count"})
+                review_count_tag = item.find("span", language["REVIEW_ATTR_PARAMETER"])
+
                 if review_count_tag:
                     text = review_count_tag.get_text(strip=True)
                     digits_only = re.sub(r"[^\d]", "", text)

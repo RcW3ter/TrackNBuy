@@ -1,0 +1,106 @@
+import requests
+from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
+import re
+import json
+
+def AmazonScrapper(word, domain, taux_conversion):
+    with open(f'scraper\\lang-amz\\{domain}.json', 'r', encoding='utf-8') as language_:
+        language = json.load(language_)
+
+    devise_symbols = {
+        "zł": "PLN",
+        "kr": "SEK",
+        "£": "GBP",
+        "$": "USD",
+        "€": "EUR"
+    }
+
+    Amazon_Product = []
+    word = word.replace(' ', '+')
+
+    ua = UserAgent()
+    headers = {
+        "User-Agent": ua.random,
+        "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Referer": f"https://www.amazon.{domain}/",
+    }
+
+    session = requests.Session()
+    session.headers.update(headers)
+
+    url = f'https://www.amazon.{domain}/s?k={word}&s=relevanceblender&ref=nb_sb_noss'
+    r = session.get(url)
+
+    soup = BeautifulSoup(r.content, 'html.parser')
+    results = soup.find_all(attrs=language["RESULTS_ATTR"])
+
+    for item in results:
+        classes = item.get("class", [])
+        if language["ADS_CLASS"] in classes:
+            continue
+
+        link_tag = item.find("a", class_=language["LINK_CLASS"])
+        if not link_tag or 'href' not in link_tag.attrs:
+            continue
+
+        href = link_tag['href']
+        full_link = f"https://www.amazon.{domain}{href}"
+        title = item.find('h2')
+        price_tag = item.find("span", class_=language["PRICE_CLASS"])
+        review_tag = item.find("span", class_=language["REVIEW_CLASS"])
+
+        num_reviews = 0
+        ratings_link = item.find("a", class_=language["RATE_LINK_PARAMETER"])
+        if ratings_link:
+            ratings_span = ratings_link.find("span", class_="a-size-base s-underline-text")
+            if ratings_span:
+                digits_only = re.sub(r"[^\d]", "", ratings_span.get_text(strip=True))
+                if digits_only:
+                    num_reviews = int(digits_only)
+        else:
+            review_count_tag = item.find("span", language["REVIEW_ATTR_PARAMETER"])
+            if review_count_tag:
+                digits_only = re.sub(r"[^\d]", "", review_count_tag.get_text(strip=True))
+                if digits_only:
+                    num_reviews = int(digits_only)
+
+        title_text = title.get_text(strip=True) if title else "Titre non trouvé"
+        price_text = price_tag.get_text(strip=True).strip() if price_tag else "Prix non trouvé"
+        review_text = review_tag.get_text(strip=True).strip() if review_tag else "Pas d'avis"
+
+        converted_amount = None
+        if price_text and price_text != "Prix non trouvé":
+            for sym, code_devise in devise_symbols.items():
+                if sym in price_text:
+                    amount_str = re.sub(r'[^\d,\.]', '', price_text.replace(sym, '')).replace(',', '.').strip()
+                    try:
+                        amount = float(amount_str)
+                        if code_devise == 'EUR':
+                            # Pas besoin de conversion
+                            converted_amount = amount
+                        else:
+                            taux = taux_conversion.get(code_devise)
+                            if taux is not None and taux != 0:
+                                converted_amount = round(amount / taux, 2)
+                    except:
+                        converted_amount = None
+                    break
+
+
+        amazon_data = {
+            "title": title_text.replace('\u200b', ''),
+            "price": price_text.replace('\xa0', ' '),
+            "converted_price_eur": converted_amount,
+            "review_text": review_text.replace('\xa0', ' '),
+            "num_reviews": num_reviews,
+            "full_link": full_link
+        }
+
+        Amazon_Product.append(amazon_data)
+
+    return Amazon_Product

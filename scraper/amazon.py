@@ -6,7 +6,7 @@ import json
 
 def AmazonScrapper(word,domain):
 
-    with open(f'scraper\\language\\{domain}.json','r', encoding='utf-8') as language_:
+    with open(f'scraper\\lang-amz\\{domain}.json','r', encoding='utf-8') as language_:
         language = json.load(language_)
 
 
@@ -73,7 +73,7 @@ def AmazonScrapper(word,domain):
             review_text = review_tag.get_text(strip=True).strip() if review_tag else "Pas d'avis"
 
             amazon_data = {
-                "title": title_text,
+                "title": title_text.replace('\u200b', ''),
                 "price": price_text.replace('\xa0',' '),
                 "review_text": review_text.replace('\xa0',' '),
                 "num_reviews": num_reviews,
@@ -83,4 +83,3 @@ def AmazonScrapper(word,domain):
             Amazon_Product.append(amazon_data)
 
     return Amazon_Product
-

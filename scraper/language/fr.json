@@ -7,5 +7,5 @@
     "RATE_LINK_PARAMETER":"a-link-normal s-underline-text s-underline-link-text s-link-style",
     "SPAN_PARAMETER":"a-size-base s-underline-text",
     "REVIEW_ATTR_PARAMETER":{"data-hook": "total-review-count"},
-    "Review-translate-fr":" sur 5"
+    "Review-translate":" sur 5"
 }

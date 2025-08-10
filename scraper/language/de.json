@@ -1,0 +1,11 @@
+{
+    "ADS_CLASS":"AdHolder",
+    "RESULTS_ATTR":{"data-component-type": "s-search-result"},
+    "LINK_CLASS":"a-link-normal s-no-outline",
+    "PRICE_CLASS":"a-offscreen",
+    "REVIEW_CLASS":"a-icon-alt",
+    "RATE_LINK_PARAMETER":"a-link-normal s-underline-text s-underline-link-text s-link-style",
+    "SPAN_PARAMETER":"a-size-base s-underline-text",
+    "REVIEW_ATTR_PARAMETER":{"data-hook": "a-size-base s-underline-text"},
+    "Review_translate-en":" out of 5"
+}

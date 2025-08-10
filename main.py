@@ -4,12 +4,20 @@ import re
 import json
 from scraper import amazon
 import review
+import convert
 
-query = 'Air Tag'
+query = 'Go pro'
 language_folder = 'scraper\\lang-amz'
 
 review_all = []
 review_data = []
+
+with open('output.txt','w') as file_reset :
+    file_reset.write('')
+
+taux = convert.get_taux_conversion()
+
+print('Taux récupéré')
 
 for filename in os.listdir(language_folder):
     if filename.endswith('.json'):
@@ -21,7 +29,7 @@ for filename in os.listdir(language_folder):
 
         i = 0
         while True:
-            output = amazon.AmazonScrapper(query, domain)
+            output = amazon.AmazonScrapper(query, domain, taux)
             if output:
                 break
             else:
@@ -34,6 +42,7 @@ for filename in os.listdir(language_folder):
             num_reviews = product_data.get("num_reviews")
             name = product_data.get("title")
             price = product_data.get("price")
+            converted = product_data.get("converted_price_eur")
             full_link = product_data.get("full_link")
 
             try:
@@ -52,6 +61,8 @@ for filename in os.listdir(language_folder):
                         "n": n,
                         "R": R,
                         "price": price,
+                        "converted_price_eur": converted, 
+                        "convert": f'{price}',
                         "name": name,
                         "link": full_link,
                         "domain": domain
@@ -70,8 +81,5 @@ for product in review_data:
 review_data_sorted = sorted(review_data, key=lambda x: x["score"], reverse=True)
 
 for p in review_data_sorted:
-    print(f"\nDomaine: {p['domain']}\nProduit: {p['name']}\nPrix: {p['price']}\nScore bayésien: {p['score']:.3f}\nLien: {p['link']}")
-
-
-
-
+    with open('output.txt','a',encoding='utf-8') as save_file :
+        save_file.write(f"\nDomaine: {p['domain']}\nProduit: {p['name']}\nPrix: {p['price']} Convertion : {p.get('converted_price_eur', 'N/A')} €\nScore bayésien: {p['score']:.3f}\nLien: {p['link']}\n")

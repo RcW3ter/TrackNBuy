@@ -3,9 +3,11 @@ import time
 import re
 import review
 
+products = 'TYPE-THE-PRODUCT-YOU-WANT-TO-SEARCH'
+
 i = 0
 while True:
-    output = amazon.AmazonScrapper('Air Tag')
+    output = amazon.AmazonScrapper(products)
     if output:
         break
     else:
@@ -54,3 +56,4 @@ review_data_sorted = sorted(review_data, key=lambda x: x["score"])
 
 for p in review_data_sorted:
     print(f"Produit: {p['name']}\nPrix: {p['price']}\nScore bayésien: {p['score']:.3f}\nLien: {p['link']}\n")
+

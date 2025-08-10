@@ -6,7 +6,7 @@ from scraper import amazon
 import review
 
 query = 'Air Tag'
-language_folder = 'scraper\\language'
+language_folder = 'scraper\\lang-amz'
 
 review_all = []
 review_data = []
@@ -43,7 +43,7 @@ for filename in os.listdir(language_folder):
 
             R = None
             if n >= 100 and review_text:
-                pattern = r"(\d+[,.]?\d*)" + language.get('Review_translate-en', '')
+                pattern = r"(\d+[,.]?\d*)" + language.get('Review_translate', '')
                 match = re.search(pattern, review_text)
                 if match:
                     R = float(match.group(1).replace(',', '.'))
@@ -70,8 +70,8 @@ for product in review_data:
 review_data_sorted = sorted(review_data, key=lambda x: x["score"], reverse=True)
 
 for p in review_data_sorted:
-    print(f"Domaine: {p['domain']}\nProduit: {p['name']}\nPrix: {p['price']}\nScore bayésien: {p['score']:.3f}\nLien: {p['link']}\n")
+    print(f"\nDomaine: {p['domain']}\nProduit: {p['name']}\nPrix: {p['price']}\nScore bayésien: {p['score']:.3f}\nLien: {p['link']}")
 
-    print(f"Produit: {p['name']}\nPrix: {p['price']}\nScore bayésien: {p['score']:.3f}\nLien: {p['link']}\n")
+
 
 

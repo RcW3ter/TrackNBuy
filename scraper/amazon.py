@@ -1,10 +1,13 @@
-import requests
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
-import re
 import json
+import re
 
-def AmazonScrapper(word, domain, taux_conversion):
+def AmazonScrapper(query,domain,taux):
+    Amazon_Product = []
+
     with open(f'scraper\\lang-amz\\{domain}.json', 'r', encoding='utf-8') as language_:
         language = json.load(language_)
 
@@ -16,27 +19,27 @@ def AmazonScrapper(word, domain, taux_conversion):
         "€": "EUR"
     }
 
-    Amazon_Product = []
-    word = word.replace(' ', '+')
+    options = Options()
+    options.add_argument("-headless") 
 
-    ua = UserAgent()
-    headers = {
-        "User-Agent": ua.random,
-        "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "Connection": "keep-alive",
-        "Upgrade-Insecure-Requests": "1",
-        "Referer": f"https://www.amazon.{domain}/",
-    }
 
-    session = requests.Session()
-    session.headers.update(headers)
+    options.set_preference("dom.webdriver.enabled", False)
+    options.set_preference('useAutomationExtension', False)
+    options.set_preference("media.navigator.enabled", False)
+    options.set_preference("privacy.resistFingerprinting", True)
+    options.set_preference("general.useragent.override", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:115.0) Gecko/20100101 Firefox/115.0")
+    options.set_preference("webdriver.load.strategy", "unstable")
 
-    url = f'https://www.amazon.{domain}/s?k={word}&s=relevanceblender&ref=nb_sb_noss'
-    r = session.get(url)
+    service = Service() 
 
-    soup = BeautifulSoup(r.content, 'html.parser')
+    driver = webdriver.Firefox(options=options, service=service)
+
+    url = f'https://www.amazon.{domain}/s?k={query}&s=relevanceblender&ref=nb_sb_noss'
+    driver.get(url)
+
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    driver.quit()
+
     results = soup.find_all(attrs=language["RESULTS_ATTR"])
 
     for item in results:
@@ -81,10 +84,9 @@ def AmazonScrapper(word, domain, taux_conversion):
                     try:
                         amount = float(amount_str)
                         if code_devise == 'EUR':
-                            # Pas besoin de conversion
                             converted_amount = amount
                         else:
-                            taux = taux_conversion.get(code_devise)
+                            taux = taux.get(code_devise)
                             if taux is not None and taux != 0:
                                 converted_amount = round(amount / taux, 2)
                     except:
@@ -102,5 +104,4 @@ def AmazonScrapper(word, domain, taux_conversion):
         }
 
         Amazon_Product.append(amazon_data)
-
     return Amazon_Product

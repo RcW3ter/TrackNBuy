@@ -6,7 +6,7 @@ from scraper import amazon
 import review
 import convert
 
-query = 'Go pro'
+query = 'Air Tag'
 language_folder = 'scraper\\lang-amz'
 
 review_all = []

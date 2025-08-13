@@ -3,7 +3,7 @@
 Projet en cours de progression :
 Site actuellement pris en charge : Amazon(Europe + Etats Unis compris ,Pays bas ,etc) ,Fnac(France seulement)
 
-Site a venir : Cdiscount , Fnac , Boulanger , Darty
+Site a venir : Cdiscount , Boulanger , Darty
 
 
 Objectif de l'aplication :

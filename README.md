@@ -1,9 +1,9 @@
 # TrackNBuy
 
 Projet en cours de progression :
-Site actuellement pris en charge : Amazon(Europe + Etats Unis compris ,Pays bas ,etc) ,Fnac(France seulement)
+Site actuellement pris en charge : Amazon(Europe + Etats Unis compris ,Pays bas ,etc) ,Fnac(France seulement) ,Cdiscount (France seulement)
 
-Site a venir : Cdiscount , Boulanger , Darty
+Site a venir : Boulanger , Darty
 
 
 Objectif de l'aplication :

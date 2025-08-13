@@ -1,12 +1,15 @@
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.firefox.service import Service
+import undetected_chromedriver as uc
 from bs4 import BeautifulSoup
 import json
 import re
 
+uc.Chrome.__del__ = lambda self: None
+
 def AmazonScrapper(query,domain,taux):
+    query = str(query).replace(' ','+')
+
     Amazon_Product = []
+    print(f"Scraping amazon.{domain} pour la requête : {query}")
 
     with open(f'scraper\\lang-amz\\{domain}.json', 'r', encoding='utf-8') as language_:
         language = json.load(language_)
@@ -19,22 +22,8 @@ def AmazonScrapper(query,domain,taux):
         "€": "EUR"
     }
 
-    options = Options()
-    options.add_argument("-headless") 
-
-
-    options.set_preference("dom.webdriver.enabled", False)
-    options.set_preference('useAutomationExtension', False)
-    options.set_preference("media.navigator.enabled", False)
-    options.set_preference("privacy.resistFingerprinting", True)
-    options.set_preference("general.useragent.override", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:115.0) Gecko/20100101 Firefox/115.0")
-    options.set_preference("webdriver.load.strategy", "unstable")
-
-    service = Service() 
-
-    driver = webdriver.Firefox(options=options, service=service)
-
-    url = f'https://www.amazon.{domain}/s?k={query}&s=relevanceblender&ref=nb_sb_noss'
+    driver = uc.Chrome()
+    url = f'https://www.amazon.{domain}/s?k="{query}"&s=relevanceblender&ref=nb_sb_noss'
     driver.get(url)
 
     soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -104,4 +93,6 @@ def AmazonScrapper(query,domain,taux):
         }
 
         Amazon_Product.append(amazon_data)
+
+    print(f"Nombre d'items trouvés : {len(Amazon_Product)}")
     return Amazon_Product
